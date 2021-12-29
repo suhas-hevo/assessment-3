@@ -10,16 +10,16 @@ public class PropertyGetter {
 
 	public Properties getProperties() {
 
-		Properties prop = new Properties();
+		Properties properties = new Properties();
 
 		try (InputStream input = PropertyGetter.class.getResourceAsStream("/config.properties");) {
-			prop.load(input);
+			properties.load(input);
 
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 
-		return prop;
+		return properties;
 
 	}
 
