@@ -17,9 +17,9 @@ public class ApiUserDao {
 
 	public int checkApiUser(String username, String password) {
 
-		String query = "SELECT * FROM apiuser WHERE username = :username and password = :password";
+		String checkCredentialsQuery = "SELECT * FROM apiuser WHERE username = :username and password = :password";
 
-		ApiUser apiUser = handle.createQuery(query).map(new ApiUserMapper()).bind("username", username)
+		ApiUser apiUser = handle.createQuery(checkCredentialsQuery).map(new ApiUserMapper()).bind("username", username)
 				.bind("password", password).first();
 
 		if (apiUser == null) {
@@ -34,8 +34,8 @@ public class ApiUserDao {
 
 	public boolean checkAccess(int userId, String username) {
 
-		String query = "SELECT * FROM apiuser WHERE username = :username";
-		ApiUser apiUser = handle.createQuery(query).map(new ApiUserMapper()).bind("username", username).first();
+		String checkAccessQuery = "SELECT * FROM apiuser WHERE username = :username";
+		ApiUser apiUser = handle.createQuery(checkAccessQuery).map(new ApiUserMapper()).bind("username", username).first();
 
 		if (apiUser != null && (apiUser.getUserId() == userId || apiUser.getPrivilageLevel() == 0)) {
 			return true;
