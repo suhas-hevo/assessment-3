@@ -9,14 +9,15 @@ import com.rest.filter.AccessAllowFilter;
 
 @Provider
 public class AccessCheckFeature implements DynamicFeature {
-	
+
 	@Override
-    public void configure(ResourceInfo resourceInfo, FeatureContext context) {
-		
-        if (resourceInfo.getResourceMethod().getAnnotation(AccessCheck.class) != null) {
-            context.register(AccessAllowFilter.class);
-        }
-        
-    }
+	public void configure(ResourceInfo resourceInfo, FeatureContext context) {
+
+		if (resourceInfo.getResourceMethod().getAnnotation(AccessCheck.class) != null) {
+
+			context.register(AccessAllowFilter.class);
+		}
+
+	}
 
 }
