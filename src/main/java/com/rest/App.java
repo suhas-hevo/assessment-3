@@ -18,16 +18,16 @@ public class App extends Application<Configuration> {
 	ContactDao contactDao = new ContactDao();
 
 	@Override
-	public void run(Configuration configuration, Environment environment) throws Exception {
+	public void run(Configuration c, Environment e) throws Exception {
 
-		environment.jersey().register(new ContactRESTController(environment.getValidator(),contactDao));
-		environment.jersey()
+		e.jersey().register(new ContactRESTController(e.getValidator(),contactDao));
+		e.jersey()
 				.register(new AuthDynamicFeature(
 						new BasicCredentialAuthFilter.Builder<User>().setAuthenticator(new UserAuthenticator())
 								.setAuthorizer(new UserAuthorizer()).setRealm("BASIC-AUTH-REALM").buildAuthFilter()));
-		environment.jersey().register(RolesAllowedDynamicFeature.class);
-		environment.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
-		environment.jersey().register(AccessCheckFeature.class);
+		e.jersey().register(RolesAllowedDynamicFeature.class);
+		e.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
+		e.jersey().register(AccessCheckFeature.class);
 
 	}
 
