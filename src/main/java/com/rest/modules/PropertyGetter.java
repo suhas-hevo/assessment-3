@@ -1,4 +1,4 @@
-package com.rest.dao.module;
+package com.rest.modules;
 
 import java.io.FileInputStream;
 import java.io.IOException;

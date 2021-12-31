@@ -1,12 +1,13 @@
-package com.rest.dao.module;
+package com.rest.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import java.util.Properties;
-
-import com.rest.dao.module.PropertyGetter;
+import com.google.inject.Scopes;
+import com.rest.dao.DbConnectionHandle;
+import com.rest.modules.PropertyGetter;
 
 public class DbConnectionModule extends AbstractModule {
 
@@ -15,7 +16,7 @@ public class DbConnectionModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-
+		bind(DbConnectionHandle.class).in(Scopes.SINGLETON);
 		bind(String.class).annotatedWith(Names.named("url")).toInstance(properties.getProperty("datasource.url"));
 
 		bind(String.class).annotatedWith(Names.named("userName"))

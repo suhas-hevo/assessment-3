@@ -4,10 +4,10 @@ import org.skife.jdbi.v2.Handle;
 //import org.jdbi.v3.core.*;
 import com.rest.dao.DbConnectionHandle;
 import com.rest.dao.mappers.ApiUserMapper;
+import com.rest.modules.DbConnectionModule;
 import com.rest.representations.ApiUser;
 import com.google.inject.Injector;
 import com.google.inject.Guice;
-import com.rest.dao.module.DbConnectionModule;
 
 public class ApiUserDao {
 

@@ -7,7 +7,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.rest.dao.DbConnectionHandle;
 import com.rest.dao.mappers.ContactMapper;
-import com.rest.dao.module.DbConnectionModule;
+import com.rest.modules.DbConnectionModule;
 import com.rest.representations.Contact;
 
 public class ContactDao {
@@ -36,7 +36,7 @@ public class ContactDao {
 		return contactRecord;
 	}
 
-	public List<Contact> getContactByFisrtName(Integer userId, String firstName) {
+	public List<Contact> getContactByFirstName(Integer userId, String firstName) {
 
 		String getContactByFisrtNameQuery = "SELECT * FROM contacts WHERE uid= :uid and firstName= :firstName";
 

@@ -2,25 +2,28 @@ package com.rest;
 
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
-import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
-import com.rest.controller.ContactRESTController;
+import com.rest.controller.ContactController;
 import com.rest.dao.contact.ContactDao;
 import com.rest.representations.*;
 import com.rest.auth.*;
 import com.rest.filter.*;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
 
 public class App extends Application<Configuration> {
-	ContactDao contactDao = new ContactDao();
-
+	Injector injector = Guice.createInjector();
+	ContactController contactController = injector.getInstance(ContactController.class);
+    
 	@Override
 	public void run(Configuration configuration, Environment environment) throws Exception {
 
-		environment.jersey().register(new ContactRESTController(environment.getValidator(),contactDao));
+		environment.jersey().register(contactController);
 		environment.jersey()
 				.register(new AuthDynamicFeature(
 						new BasicCredentialAuthFilter.Builder<User>().setAuthenticator(new UserAuthenticator())

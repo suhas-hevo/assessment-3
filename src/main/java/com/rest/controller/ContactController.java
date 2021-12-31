@@ -21,6 +21,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import io.dropwizard.auth.Auth;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.rest.dao.contact.ContactDao;
 import com.rest.representations.Contact;
 import com.rest.representations.*;
@@ -28,18 +30,14 @@ import com.rest.filter.*;
 import java.util.Optional;
 import java.util.List;
 import java.util.Collections;
+import javax.validation.Valid;
 
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)
-public class ContactRESTController {
-
-	final Validator validator;
-	ContactDao contactDao;
-
-	public ContactRESTController(Validator validator,ContactDao contactDao) {
-		this.validator = validator;
-		this.contactDao = contactDao;
-	}
+public class ContactController {
+	
+	Injector injector = Guice.createInjector();
+    final ContactDao contactDao = injector.getInstance(ContactDao.class);
 
 	@GET
 	@Path("/{uid}/contacts/")
@@ -58,24 +56,24 @@ public class ContactRESTController {
 	public Response getContactByName(@PathParam("uid") Integer userId,
 			@QueryParam("firstname") Optional<String> firstname, @QueryParam("lastname") Optional<String> lastname,
 			@Auth User user) {
-		List<Contact> resultContactList = Collections.<Contact>emptyList();
+		List<Contact> resultContacts = Collections.<Contact>emptyList();
 
 		if (firstname.isPresent() && lastname.isPresent()) {
 
-			resultContactList = contactDao.getContactByName(userId, firstname.get(), lastname.get());
+			resultContacts = contactDao.getContactByName(userId, firstname.get(), lastname.get());
 
 		} else if (firstname.isPresent() && !lastname.isPresent()) {
 
-			resultContactList = contactDao.getContactByFisrtName(userId, firstname.get());
+			resultContacts = contactDao.getContactByFirstName(userId, firstname.get());
 
 		} else if (!firstname.isPresent() && lastname.isPresent()) {
 
-			resultContactList = contactDao.getContactByLastName(userId, lastname.get());
+			resultContacts= contactDao.getContactByLastName(userId, lastname.get());
 
 		}
 
-		if (!resultContactList.isEmpty()) {
-			return Response.ok(resultContactList).build();
+		if (!resultContacts.isEmpty()) {
+			return Response.ok(resultContacts).build();
 		} else
 			return Response.status(Status.NOT_FOUND).build();
 
@@ -85,26 +83,14 @@ public class ContactRESTController {
 	@Path("/{uid}/contact/")
 	@AccessCheck
 	@RolesAllowed({ "USER" })
-	public Response createContact(@PathParam("uid") Integer userId, Contact contact, @Auth User user)
+	public Response createContact(@PathParam("uid") Integer userId,@Valid Contact contact, @Auth User user)
 			throws URISyntaxException {
-		// validation
-		Set<ConstraintViolation<Contact>> violations = validator.validate(contact);
-
+		
 		Contact contactRecord = contactDao.getContactById(userId, contact.getId());
-
-		if (violations.size() > 0) {
-			ArrayList<String> validationMessages = new ArrayList<String>();
-
-			for (ConstraintViolation<Contact> violation : violations) {
-				validationMessages.add(violation.getPropertyPath().toString() + ": " + violation.getMessage());
-			}
-
-			return Response.status(Status.BAD_REQUEST).entity(validationMessages).build();
-		}
 
 		if (contactRecord == null && contactDao.insertContact(userId, contact.getId(), contact)) {
 
-			return Response.created(new URI("/contacts/" + contact.getId())).build();
+			return Response.created(new URI(contact.getId()+"/contact/")).build();
 		}
 
 		else
@@ -116,22 +102,9 @@ public class ContactRESTController {
 	@Path("/{uid}/contact/")
 	@AccessCheck
 	@RolesAllowed({ "USER" })
-	public Response updateContactById(@PathParam("uid") Integer userId, Contact contact, @Auth User user) {
-		// validation
-		Set<ConstraintViolation<Contact>> violations = validator.validate(contact);
-
+	public Response updateContactById(@PathParam("uid") Integer userId,@Valid Contact contact, @Auth User user) {
+		
 		Contact contactRecord = contactDao.getContactById(userId, contact.getId());
-
-		if (violations.size() > 0) {
-
-			ArrayList<String> validationMessages = new ArrayList<String>();
-
-			for (ConstraintViolation<Contact> violation : violations) {
-				validationMessages.add(violation.getPropertyPath().toString() + ": " + violation.getMessage());
-			}
-
-			return Response.status(Status.BAD_REQUEST).entity(validationMessages).build();
-		}
 
 		if (contactRecord != null && contactDao.updateContact(userId, contact.getId(), contact)) {
 
@@ -159,4 +132,5 @@ public class ContactRESTController {
 		else
 			return Response.status(Status.NOT_FOUND).build();
 	}
+	
 }
