@@ -11,21 +11,24 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.rest.dao.apiuser.ApiUserDao;
 import com.rest.representations.User;
+import com.rest.service.*;
 
 public class UserAuthenticator implements Authenticator<BasicCredentials, User> {
 
 	private static final Map<String, Set<String>> VALID_USERS = ImmutableMap.of("guest", ImmutableSet.of(), "user",
 			ImmutableSet.of("USER"), "admin", ImmutableSet.of("ADMIN", "USER"));
 
-	private ApiUserDao apiUserDao = new ApiUserDao();
+	Injector injector = Guice.createInjector();
+    CheckUserService checkUserService = injector.getInstance(CheckUserService.class);
 
 	@Override
 	public Optional<User> authenticate(BasicCredentials credentials) throws AuthenticationException {
 
-		int userPrivilageLevel = apiUserDao.checkApiUser(credentials.getUsername(), credentials.getPassword());
+		int userPrivilageLevel = checkUserService.checkCredentials(credentials.getUsername(), credentials.getPassword());
 
 		if (userPrivilageLevel == 1) {
 			return Optional.of(new User(credentials.getUsername(), VALID_USERS.get("user")));

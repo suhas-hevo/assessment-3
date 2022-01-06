@@ -11,13 +11,10 @@ public class Contact {
 
 	@NotNull
 	private Integer contactId;
-	@NotBlank
 	@Length(min = 2, max = 255)
 	private String firstName;
-	@NotBlank
 	@Length(min = 2, max = 255)
 	private String lastName;
-	@NotBlank
 	@Pattern(regexp = ".+@.+\\.[a-z]+")
 	private String email;
 

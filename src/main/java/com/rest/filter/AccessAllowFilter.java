@@ -10,17 +10,21 @@ import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.rest.dao.apiuser.ApiUserDao;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Base64;
+import com.rest.service.*;
 
 @Provider
 public class AccessAllowFilter implements ContainerRequestFilter {
 
-	private ApiUserDao apiUserDao = new ApiUserDao();
+	Injector injector = Guice.createInjector();
+    CheckUserService checkUserService = injector.getInstance(CheckUserService.class);
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -31,7 +35,7 @@ public class AccessAllowFilter implements ContainerRequestFilter {
 
 		String userName = requestInfo.getUserName();
 
-		if (!apiUserDao.checkAccess(userId, userName)) {
+		if (!checkUserService.checkAccess(userId, userName)) {
 			throw new WebApplicationException(new IllegalArgumentException("Access Not Allowed"),
 					Response.Status.UNAUTHORIZED);
 		}

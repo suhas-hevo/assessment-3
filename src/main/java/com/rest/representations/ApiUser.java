@@ -6,6 +6,8 @@ public class ApiUser {
 	private String userName;
 	private String userPassword;
 	private Integer userPrivilageLevel;
+	
+	public ApiUser() {}
 
 	public ApiUser(Integer userId, String userName, String userPassword, Integer userPrivilageLevel) {
 		this.userId = userId;

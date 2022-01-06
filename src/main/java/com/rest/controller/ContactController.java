@@ -4,7 +4,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Set;
-
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import javax.ws.rs.DELETE;
@@ -20,7 +19,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import io.dropwizard.auth.Auth;
-
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.rest.dao.contact.ContactDao;
@@ -31,13 +29,21 @@ import java.util.Optional;
 import java.util.List;
 import java.util.Collections;
 import javax.validation.Valid;
+import com.rest.service.*;
 
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)
 public class ContactController {
 	
 	Injector injector = Guice.createInjector();
-    final ContactDao contactDao = injector.getInstance(ContactDao.class);
+    ContactDao contactDao = injector.getInstance(ContactDao.class);
+    ContactService contactService = injector.getInstance(ContactService.class);
+    
+    public ContactController() {}
+    
+    public ContactController(ContactService contactService){
+    	this.contactService = contactService;
+    }
 
 	@GET
 	@Path("/{uid}/contacts/")
@@ -45,7 +51,7 @@ public class ContactController {
 	@RolesAllowed({ "USER" })
 	public Response getAllContacts(@PathParam("uid") Integer userId, @Auth User user) {
 
-		return Response.ok(contactDao.getAllContacts(userId)).build();
+		return Response.ok(contactService.getAllContacts(userId)).build();
 
 	}
 
@@ -56,21 +62,12 @@ public class ContactController {
 	public Response getContactByName(@PathParam("uid") Integer userId,
 			@QueryParam("firstname") Optional<String> firstname, @QueryParam("lastname") Optional<String> lastname,
 			@Auth User user) {
-		List<Contact> resultContacts = Collections.<Contact>emptyList();
-
-		if (firstname.isPresent() && lastname.isPresent()) {
-
-			resultContacts = contactDao.getContactByName(userId, firstname.get(), lastname.get());
-
-		} else if (firstname.isPresent() && !lastname.isPresent()) {
-
-			resultContacts = contactDao.getContactByFirstName(userId, firstname.get());
-
-		} else if (!firstname.isPresent() && lastname.isPresent()) {
-
-			resultContacts= contactDao.getContactByLastName(userId, lastname.get());
-
+		
+		if(!firstname.isPresent() && !lastname.isPresent()) {
+			return Response.status(Status.BAD_REQUEST).build();
 		}
+
+		List<Contact> resultContacts = contactService.getContactByName(userId, firstname, lastname);
 
 		if (!resultContacts.isEmpty()) {
 			return Response.ok(resultContacts).build();
@@ -85,10 +82,8 @@ public class ContactController {
 	@RolesAllowed({ "USER" })
 	public Response createContact(@PathParam("uid") Integer userId,@Valid Contact contact, @Auth User user)
 			throws URISyntaxException {
-		
-		Contact contactRecord = contactDao.getContactById(userId, contact.getId());
 
-		if (contactRecord == null && contactDao.insertContact(userId, contact.getId(), contact)) {
+		if (contactService.insertContact(userId, contact.getId(), contact)) {
 
 			return Response.created(new URI(contact.getId()+"/contact/")).build();
 		}
@@ -104,11 +99,9 @@ public class ContactController {
 	@RolesAllowed({ "USER" })
 	public Response updateContactById(@PathParam("uid") Integer userId,@Valid Contact contact, @Auth User user) {
 		
-		Contact contactRecord = contactDao.getContactById(userId, contact.getId());
+		if (contactService.updateContact(userId, contact.getId(), contact)) {
 
-		if (contactRecord != null && contactDao.updateContact(userId, contact.getId(), contact)) {
-
-			return Response.ok(contact).build();
+			return Response.ok().build();
 
 		} else
 
@@ -122,10 +115,7 @@ public class ContactController {
 	public Response removeContactById(@PathParam("uid") Integer userId, @QueryParam("contactId") Integer contactId,
 			@Auth User user) {
 
-		Contact contact = contactDao.getContactById(userId, contactId);
-
-		if (contact != null) {
-			contactDao.removeContact(userId, contactId);
+		if (contactService.removeContact(userId, contactId)) {
 			return Response.ok().build();
 		}
 
